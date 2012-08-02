@@ -178,7 +178,7 @@ public class FishChecker extends JavaPlugin implements Listener, CommandExecutor
 						if(mcbouncerInfo != null) outputHashMap(map, sender);
 						map.clear();				
 					}else{
-						sender.sendMessage(ChatColor.GREEN+"Mcbans: "+String.valueOf(mcbansAmt));
+						sender.sendMessage(ChatColor.GREEN+"Mcbouncer: "+String.valueOf(mcbansAmt));
 					}
 					
 					//McBlockIt
@@ -264,7 +264,7 @@ public class FishChecker extends JavaPlugin implements Listener, CommandExecutor
 		Iterator<String> cKeys = map.keySet().iterator();
 	    Iterator<Object> cValue = map.values().iterator();
 		while (cValue.hasNext() && cKeys.hasNext()){
-			sender.sendMessage(ChatColor.RED + cKeys.next()+": "+cValue.next().toString());
+			sender.sendMessage(ChatColor.GRAY + cKeys.next()+": "+ChatColor.DARK_RED+cValue.next().toString());
 		}
 	}
 }
