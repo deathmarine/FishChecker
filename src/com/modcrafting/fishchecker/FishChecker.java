@@ -57,7 +57,7 @@ public class FishChecker extends JavaPlugin implements Listener, CommandExecutor
 				URL url;
 				URLConnection connection;
 				try {
-					url = new URL("http://www.fishbans.com/api/bans/"+player.getName()+"/force/");
+					url = new URL("http://www.fishbans.com/api/stats/"+player.getName()+"/force/");
 					connection = url.openConnection();
 					connection.addRequestProperty("Referer","http://" + Bukkit.getServer().getIp());
 					String line;
@@ -70,26 +70,28 @@ public class FishChecker extends JavaPlugin implements Listener, CommandExecutor
 					Object obj = parser.parse(builder.toString());
 					
 					JSONObject jsonObject = (JSONObject) obj;
-					JSONObject bans = (JSONObject) jsonObject.get("bans");
+					JSONObject bans = (JSONObject) jsonObject.get("stats");
 					if(bans == null){
 						return;
 					}
 					JSONObject service = (JSONObject) bans.get("service");
-					
-					JSONObject mcbans = (JSONObject) service.get("mcbans");
 					long mcbansAmt = 0;
-					if(mcbans.get("bans") != null) mcbansAmt = (Long) mcbans.get("bans");
-					JSONObject mcbouncer = (JSONObject) service.get("mcbouncer");
+					if(service.get("mcbans") != null) mcbansAmt = (Long) service.get("mcbans");
 					long mcbouncerAmt = 0;
-					if(mcbouncer.get("bans") != null) mcbouncerAmt = (Long) mcbouncer.get("bans");
-					JSONObject mcblockit = (JSONObject) service.get("mcblockit");
+					if(service.get("mcbouncer") != null) mcbouncerAmt = (Long) service.get("mcbouncer");
 					long mcblockitAmt =  0;
-					if(mcblockit.get("bans") != null) mcblockitAmt = (Long) mcblockit.get("bans");
+					if(service.get("mcblockit") != null) mcblockitAmt = (Long) service.get("mcblockit");
+					long minebansAmt = 0;
+					if(service.get("minebans") != null) minebansAmt = (Long) service.get("minebans");
+					long bcbansrAmt = 0;
+					if(service.get("bcbans") != null) bcbansrAmt = (Long) service.get("bcbans");
 					
-					printToAdmins(ChatColor.GRAY+"Player: "+player.getName()+" has "+ChatColor.RED+String.valueOf(mcbansAmt+mcbouncerAmt+mcblockitAmt)+ChatColor.GRAY+" Ban(s).");
+					printToAdmins(ChatColor.GRAY+"Player: "+player.getName()+" has "+ChatColor.RED+String.valueOf(mcbansAmt+mcbouncerAmt+mcblockitAmt+minebansAmt+bcbansrAmt)+ChatColor.GRAY+" Ban(s).");
 					if(mcbansAmt > 0) printToAdmins(ChatColor.GRAY+"McBans: "+ChatColor.RED+String.valueOf(mcbansAmt));
 					if(mcbouncerAmt > 0) printToAdmins(ChatColor.GRAY+"McBouncer: "+ChatColor.RED+String.valueOf(mcbouncerAmt));
 					if(mcblockitAmt > 0) printToAdmins(ChatColor.GRAY+"McBlockit: "+ChatColor.RED+String.valueOf(mcblockitAmt));
+					if(minebansAmt > 0) printToAdmins(ChatColor.GRAY+"MineBans: "+ChatColor.RED+String.valueOf(minebansAmt));
+					if(bcbansrAmt > 0) printToAdmins(ChatColor.GRAY+"Bcbans: "+ChatColor.RED+String.valueOf(bcbansrAmt));
 					if(mcbansAmt > 0 || mcbouncerAmt > 0 || mcblockitAmt > 0)printToAdmins(ChatColor.GRAY+"Use "+ChatColor.GREEN+"/fishcheck "+event.getPlayer().getName()+ChatColor.GRAY+" for more info.");
 					
 				} catch (MalformedURLException e) {
@@ -113,12 +115,12 @@ public class FishChecker extends JavaPlugin implements Listener, CommandExecutor
 		if(args.length < 1) return false;
 		this.getServer().getScheduler().scheduleAsyncDelayedTask(this,new Runnable(){
 
-			HashMap<String, Object> map = new HashMap<String, Object>();
 			@Override
 			public void run() {
 				URL url;
 				URLConnection connection;
 				try {
+					HashMap<String, Object> map = new HashMap<String, Object>();
 					url = new URL("http://www.fishbans.com/api/bans/"+args[0].toLowerCase()+"/force/");
 					connection = url.openConnection();
 					connection.addRequestProperty("Referer","http://" + Bukkit.getServer().getIp());
@@ -142,6 +144,7 @@ public class FishChecker extends JavaPlugin implements Listener, CommandExecutor
 						sender.sendMessage("Player Does Not Exist.");
 						return;
 					}
+					//McBans
 					JSONObject mcbans = (JSONObject) service.get("mcbans");
 					if(mcbans == null){
 						sender.sendMessage("Mcbans: Player Not Found.");
@@ -173,7 +176,7 @@ public class FishChecker extends JavaPlugin implements Listener, CommandExecutor
 					}
 					if(mcbouncerAmt > 0){
 						JSONObject mcbouncerInfo = castToJSON(mcbouncer.get("ban_info"));
-						sender.sendMessage("Mcbouncer: " + String.valueOf(mcbouncerAmt));
+						sender.sendMessage(ChatColor.RED+"Mcbouncer: " + String.valueOf(mcbouncerAmt));
 						toJavaMap(mcbouncerInfo, map);
 						if(mcbouncerInfo != null) outputHashMap(map, sender);
 						map.clear();				
@@ -193,12 +196,12 @@ public class FishChecker extends JavaPlugin implements Listener, CommandExecutor
 					}
 					if(mcblockitAmt > 0){
 						JSONObject mcblockitInfo = castToJSON(mcblockit.get("ban_info"));
-						sender.sendMessage("McBlockit: " + String.valueOf(mcblockitAmt));
+						sender.sendMessage(ChatColor.RED+"McBlockit: " + String.valueOf(mcblockitAmt));
 						toJavaMap(mcblockitInfo, map);
 						if(mcblockitInfo != null) outputHashMap(map, sender);
 						map.clear();				
 					}else{
-						sender.sendMessage(ChatColor.GREEN+"McBlockit: "+String.valueOf(mcbansAmt));
+						sender.sendMessage(ChatColor.GREEN+"McBlockit: "+String.valueOf(mcblockitAmt));
 					}
 					
 				} catch (MalformedURLException e) {
