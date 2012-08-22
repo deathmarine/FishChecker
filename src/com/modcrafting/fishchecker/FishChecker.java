@@ -30,7 +30,6 @@ import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -42,10 +41,9 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-public class FishChecker extends JavaPlugin implements Listener, CommandExecutor{
+public class FishChecker extends JavaPlugin implements Listener{
 	public void onEnable(){				
 		this.getServer().getPluginManager().registerEvents(this, this);
-		this.getCommand("fishcheck").setExecutor(this);
 	}
 	@EventHandler
 	public void onPlayerJoin(final PlayerJoinEvent event){
@@ -106,13 +104,12 @@ public class FishChecker extends JavaPlugin implements Listener, CommandExecutor
 	}
 
 	public boolean onCommand(final CommandSender sender, Command command, String label, final String[] args) {
-		if(sender instanceof Player){
-			if(!((Player) sender).hasPermission("fishcheck.command") || !((Player) sender).isOp()){
-				sender.sendMessage(ChatColor.RED + "You do not have the required permissions.");
-				return true;
-			}
+		if(!sender.hasPermission(command.getPermission())){
+			sender.sendMessage(ChatColor.RED + "You do not have the required permissions.");
+			return true;
 		}
 		if(args.length < 1) return false;
+		sender.sendMessage(ChatColor.GRAY+"Checking Site for information on "+ChatColor.DARK_RED+args[0]+ChatColor.GRAY+" !");
 		this.getServer().getScheduler().scheduleAsyncDelayedTask(this,new Runnable(){
 
 			@Override
@@ -181,7 +178,7 @@ public class FishChecker extends JavaPlugin implements Listener, CommandExecutor
 						if(mcbouncerInfo != null) outputHashMap(map, sender);
 						map.clear();				
 					}else{
-						sender.sendMessage(ChatColor.GREEN+"Mcbouncer: "+String.valueOf(mcbansAmt));
+						sender.sendMessage(ChatColor.GREEN+"Mcbouncer: "+String.valueOf(mcbouncerAmt));
 					}
 					
 					//McBlockIt
@@ -203,7 +200,7 @@ public class FishChecker extends JavaPlugin implements Listener, CommandExecutor
 					}else{
 						sender.sendMessage(ChatColor.GREEN+"McBlockit: "+String.valueOf(mcblockitAmt));
 					}
-					
+					sender.sendMessage(ChatColor.GREEN+"See "+ChatColor.GRAY+"http://fishbans.com/u/"+args[0].toLowerCase()+"/");
 				} catch (MalformedURLException e) {
 					e.printStackTrace();
 				} catch (IOException e) {

@@ -1,6 +1,6 @@
 name: FishChecker
 main: com.modcrafting.fishchecker.FishChecker
-version: 0.1
+version: 0.4
 website: http://modcrafting.com
 author: Deathmarine
 description: >
@@ -8,20 +8,19 @@ description: >
 commands:
   fishcheck:
     description: Checks a player name against the FishBans website.
+    permission: fishcheck.command
     usage: /<command> <player>
 permissions:
   fishcheck.*:
+    default: op
     description: Allows the Administration to Full Control
     children:
       fishcheck.override: true
       fishcheck.command: true
       fishcheck.messages: true
   fishcheck.override:
-    default: op
     description: Allows players to override the login check.
   fishcheck.command:
-    default: op
     description: Allows players to use the /fishcheck command.
   fishcheck.messages:
-    default: op
     description: Allows players to view login messages.
