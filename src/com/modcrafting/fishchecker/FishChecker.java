@@ -21,13 +21,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -53,14 +51,11 @@ public class FishChecker extends JavaPlugin implements Listener{
 			@Override
 			public void run() {
 				URL url;
-				URLConnection connection;
 				try {
 					url = new URL("http://www.fishbans.com/api/stats/"+player.getName()+"/force/");
-					connection = url.openConnection();
-					connection.addRequestProperty("Referer","http://" + Bukkit.getServer().getIp());
 					String line;
 					StringBuilder builder = new StringBuilder();
-					BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+					BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
 					while((line = reader.readLine()) != null) {
 					 builder.append(line);
 					}
@@ -115,15 +110,12 @@ public class FishChecker extends JavaPlugin implements Listener{
 			@Override
 			public void run() {
 				URL url;
-				URLConnection connection;
 				try {
 					HashMap<String, Object> map = new HashMap<String, Object>();
 					url = new URL("http://www.fishbans.com/api/bans/"+args[0].toLowerCase()+"/force/");
-					connection = url.openConnection();
-					connection.addRequestProperty("Referer","http://" + Bukkit.getServer().getIp());
 					String line;
 					StringBuilder builder = new StringBuilder();
-					BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+					BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
 					while((line = reader.readLine()) != null) {
 					 builder.append(line);
 					}
