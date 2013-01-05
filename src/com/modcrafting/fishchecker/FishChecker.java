@@ -47,12 +47,12 @@ public class FishChecker extends JavaPlugin implements Listener{
 	public void onPlayerJoin(final PlayerJoinEvent event){
 		final Player player = event.getPlayer();
 		if(player.isOp() || player.hasPermission("fishcheck.override")) return;
-		this.getServer().getScheduler().scheduleAsyncDelayedTask(this,new Runnable(){
+		this.getServer().getScheduler().scheduleSyncDelayedTask(this,new Runnable(){
 			@Override
 			public void run() {
 				URL url;
 				try {
-					url = new URL("http://www.fishbans.com/api/stats/"+player.getName()+"/force/");
+					url = new URL("http://www.fishbans.com/api/stats/"+player.getName()+"/");
 					String line;
 					StringBuilder builder = new StringBuilder();
 					BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
@@ -76,16 +76,13 @@ public class FishChecker extends JavaPlugin implements Listener{
 					if(service.get("mcblockit") != null) mcblockitAmt = (Long) service.get("mcblockit");
 					long minebansAmt = 0;
 					if(service.get("minebans") != null) minebansAmt = (Long) service.get("minebans");
-					long bcbansrAmt = 0;
-					if(service.get("bcbans") != null) bcbansrAmt = (Long) service.get("bcbans");
 					
-					printToAdmins(ChatColor.GRAY+"Player: "+player.getName()+" has "+ChatColor.RED+String.valueOf(mcbansAmt+mcbouncerAmt+mcblockitAmt+minebansAmt+bcbansrAmt)+ChatColor.GRAY+" Ban(s).");
+					printToAdmins(ChatColor.GRAY+"Player: "+player.getName()+" has "+ChatColor.RED+String.valueOf(mcbansAmt+mcbouncerAmt+mcblockitAmt+minebansAmt)+ChatColor.GRAY+" Ban(s).");
 					if(mcbansAmt > 0) printToAdmins(ChatColor.GRAY+"McBans: "+ChatColor.RED+String.valueOf(mcbansAmt));
 					if(mcbouncerAmt > 0) printToAdmins(ChatColor.GRAY+"McBouncer: "+ChatColor.RED+String.valueOf(mcbouncerAmt));
 					if(mcblockitAmt > 0) printToAdmins(ChatColor.GRAY+"McBlockit: "+ChatColor.RED+String.valueOf(mcblockitAmt));
 					if(minebansAmt > 0) printToAdmins(ChatColor.GRAY+"MineBans: "+ChatColor.RED+String.valueOf(minebansAmt));
-					if(bcbansrAmt > 0) printToAdmins(ChatColor.GRAY+"Bcbans: "+ChatColor.RED+String.valueOf(bcbansrAmt));
-					if(mcbansAmt > 0 || mcbouncerAmt > 0 || mcblockitAmt > 0)printToAdmins(ChatColor.GRAY+"Use "+ChatColor.GREEN+"/fishcheck "+event.getPlayer().getName()+ChatColor.GRAY+" for more info.");
+					if(mcbansAmt > 0 || mcbouncerAmt > 0 || mcblockitAmt > 0 || minebansAmt > 0)printToAdmins(ChatColor.GRAY+"Use "+ChatColor.GREEN+"/fishcheck "+event.getPlayer().getName()+ChatColor.GRAY+" for more info.");
 					
 				} catch (MalformedURLException e) {
 					e.printStackTrace();
@@ -105,14 +102,14 @@ public class FishChecker extends JavaPlugin implements Listener{
 		}
 		if(args.length < 1) return false;
 		sender.sendMessage(ChatColor.GRAY+"Checking Site for information on "+ChatColor.DARK_RED+args[0]+ChatColor.GRAY+" !");
-		this.getServer().getScheduler().scheduleAsyncDelayedTask(this,new Runnable(){
+		this.getServer().getScheduler().scheduleSyncDelayedTask(this,new Runnable(){
 
 			@Override
 			public void run() {
 				URL url;
 				try {
 					HashMap<String, Object> map = new HashMap<String, Object>();
-					url = new URL("http://www.fishbans.com/api/bans/"+args[0].toLowerCase()+"/force/");
+					url = new URL("http://www.fishbans.com/api/bans/"+args[0].toLowerCase()+"/");
 					String line;
 					StringBuilder builder = new StringBuilder();
 					BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
