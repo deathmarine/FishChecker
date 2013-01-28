@@ -46,13 +46,12 @@ public class FishChecker extends JavaPlugin implements Listener{
 	@EventHandler
 	public void onPlayerJoin(final PlayerJoinEvent event){
 		final Player player = event.getPlayer();
-		if(player.isOp() || player.hasPermission("fishcheck.override")) return;
+		if(player.hasPermission("fishcheck.override")) return;
 		this.getServer().getScheduler().scheduleSyncDelayedTask(this,new Runnable(){
 			@Override
 			public void run() {
-				URL url;
 				try {
-					url = new URL("http://www.fishbans.com/api/stats/"+player.getName()+"/");
+					URL url = new URL("http://www.fishbans.com/api/stats/"+player.getName()+"/");
 					String line;
 					StringBuilder builder = new StringBuilder();
 					BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
@@ -61,6 +60,7 @@ public class FishChecker extends JavaPlugin implements Listener{
 					}
 					JSONParser parser = new JSONParser();
 					Object obj = parser.parse(builder.toString());
+					reader.close();
 					
 					JSONObject jsonObject = (JSONObject) obj;
 					JSONObject bans = (JSONObject) jsonObject.get("stats");
@@ -106,10 +106,9 @@ public class FishChecker extends JavaPlugin implements Listener{
 
 			@Override
 			public void run() {
-				URL url;
 				try {
 					HashMap<String, Object> map = new HashMap<String, Object>();
-					url = new URL("http://www.fishbans.com/api/bans/"+args[0].toLowerCase()+"/");
+					URL url = new URL("http://www.fishbans.com/api/bans/"+args[0].toLowerCase()+"/");
 					String line;
 					StringBuilder builder = new StringBuilder();
 					BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
@@ -118,6 +117,7 @@ public class FishChecker extends JavaPlugin implements Listener{
 					}
 					JSONParser parser = new JSONParser();
 					Object obj = parser.parse(builder.toString());
+					reader.close();
 					
 					JSONObject jsonObject = (JSONObject) obj;
 					JSONObject bans = (JSONObject) jsonObject.get("bans");
@@ -130,7 +130,7 @@ public class FishChecker extends JavaPlugin implements Listener{
 						sender.sendMessage("Player Does Not Exist.");
 						return;
 					}
-					//McBans
+					//McBans -
 					JSONObject mcbans = (JSONObject) service.get("mcbans");
 					if(mcbans == null){
 						sender.sendMessage("Mcbans: Player Not Found.");
@@ -212,40 +212,40 @@ public class FishChecker extends JavaPlugin implements Listener{
 
 	@SuppressWarnings("rawtypes")
 	public void toJavaMap(JSONObject o, Map<String, Object> b) {
-		  Iterator ji = o.keySet().iterator();
-		  while (ji.hasNext()) {
-		    String key = (String) ji.next();
-		    Object val = o.get(key);
-		    if (val.getClass() == JSONObject.class) {
-		      Map<String, Object> sub = new HashMap<String, Object>();
-		      toJavaMap((JSONObject) val, sub);
-		      b.put(key, sub);
-		    } else if (val.getClass() == JSONArray.class) {
-		      List<Object> l = new ArrayList<Object>();
-		      JSONArray arr = (JSONArray) val;
-		      for (int a = 0; a < arr.size(); a++) {
-		        Map<String, Object> sub = new HashMap<String, Object>();
-		        Object element = arr.get(a);
-		        if (element instanceof JSONObject) {
-		          toJavaMap((JSONObject) element, sub);
-		          l.add(sub);
-		        } else {
-		          l.add(element);
-		        }
-		      }
-		      b.put(key, l);
-		    } else {
-		      b.put(key, val);
-		    }
-		  }
+		Iterator ji = o.keySet().iterator();
+		while (ji.hasNext()) {
+			String key = (String) ji.next();
+			Object val = o.get(key);
+			if (val.getClass() == JSONObject.class) {
+				Map<String, Object> sub = new HashMap<String, Object>();
+				toJavaMap((JSONObject) val, sub);
+				b.put(key, sub);
+			} else if (val.getClass() == JSONArray.class) {
+				List<Object> l = new ArrayList<Object>();
+				JSONArray arr = (JSONArray) val;
+				for (int a = 0; a < arr.size(); a++) {
+					Map<String, Object> sub = new HashMap<String, Object>();
+					Object element = arr.get(a);
+					if (element instanceof JSONObject) {
+						toJavaMap((JSONObject) element, sub);
+						l.add(sub);
+					} else {
+						l.add(element);
+					}
+				}
+				b.put(key, l);
+			} else {
+				b.put(key, val);
+			}
 		}
+	}
 	public JSONObject castToJSON(Object object){
 		if(object instanceof JSONObject){
 			return (JSONObject) object;
 		}
 		return null;
 	}
-	public void outputHashMap(HashMap<String, Object> map, CommandSender sender){
+	private void outputHashMap(HashMap<String, Object> map, CommandSender sender){
 		if (map == null){
 			sender.sendMessage(ChatColor.GREEN+ "Nothing Found");
 			return;
