@@ -68,14 +68,14 @@ public class FishChecker extends JavaPlugin implements Listener{
 						return;
 					}
 					JSONObject service = (JSONObject) bans.get("service");
-					long mcbansAmt = 0;
-					if(service.get("mcbans") != null) mcbansAmt = (Long) service.get("mcbans");
+					long mcbansAmt = 0L;
+					if(service.get("mcbans") != null) mcbansAmt = getValue(service.get("mcbans"));
 					long mcbouncerAmt = 0;
-					if(service.get("mcbouncer") != null) mcbouncerAmt = (Long) service.get("mcbouncer");
+					if(service.get("mcbouncer") != null) mcbouncerAmt = getValue(service.get("mcbouncer"));
 					long mcblockitAmt =  0;
-					if(service.get("mcblockit") != null) mcblockitAmt = (Long) service.get("mcblockit");
+					if(service.get("mcblockit") != null) mcblockitAmt = getValue(service.get("mcblockit"));
 					long minebansAmt = 0;
-					if(service.get("minebans") != null) minebansAmt = (Long) service.get("minebans");
+					if(service.get("minebans") != null) minebansAmt = getValue(service.get("minebans"));
 					
 					printToAdmins(ChatColor.GRAY+"Player: "+player.getName()+" has "+ChatColor.RED+String.valueOf(mcbansAmt+mcbouncerAmt+mcblockitAmt+minebansAmt)+ChatColor.GRAY+" Ban(s).");
 					if(mcbansAmt > 0) printToAdmins(ChatColor.GRAY+"McBans: "+ChatColor.RED+String.valueOf(mcbansAmt));
@@ -137,9 +137,7 @@ public class FishChecker extends JavaPlugin implements Listener{
 						return;
 					}
 					long mcbansAmt = 0;
-					if(mcbans.get("bans") != null){
-						mcbansAmt = (Long) mcbans.get("bans");
-					}
+					if(mcbans.get("bans") != null) mcbansAmt = getValue(mcbans.get("bans"));
 					if(mcbansAmt > 0){
 						JSONObject mcbansInfo = castToJSON(mcbans.get("ban_info"));
 						sender.sendMessage(ChatColor.RED+"Mcbans: " + String.valueOf(mcbansAmt));
@@ -157,9 +155,7 @@ public class FishChecker extends JavaPlugin implements Listener{
 						return;
 					}
 					long mcbouncerAmt = 0;
-					if(mcbouncer.get("bans") != null){
-						mcbouncerAmt = (Long) mcbouncer.get("bans");
-					}
+					if(mcbouncer.get("bans") != null) mcbouncerAmt = getValue(mcbouncer.get("bans"));
 					if(mcbouncerAmt > 0){
 						JSONObject mcbouncerInfo = castToJSON(mcbouncer.get("ban_info"));
 						sender.sendMessage(ChatColor.RED+"Mcbouncer: " + String.valueOf(mcbouncerAmt));
@@ -177,9 +173,7 @@ public class FishChecker extends JavaPlugin implements Listener{
 						return;
 					}
 					long mcblockitAmt = 0;
-					if(mcblockit.get("bans") != null){
-						mcblockitAmt = (Long) mcblockit.get("bans");
-					}
+					if(mcblockit.get("bans") != null) mcblockitAmt = getValue(mcblockit.get("bans"));
 					if(mcblockitAmt > 0){
 						JSONObject mcblockitInfo = castToJSON(mcblockit.get("ban_info"));
 						sender.sendMessage(ChatColor.RED+"McBlockit: " + String.valueOf(mcblockitAmt));
@@ -202,7 +196,8 @@ public class FishChecker extends JavaPlugin implements Listener{
 		
 		return true;
 	}
-	public void printToAdmins(String string){
+	
+	private void printToAdmins(String string){
 		for(Player player: this.getServer().getOnlinePlayers()){
 			if(player.hasPermission("fishcheck.messages") || player.isOp()){
 				player.sendMessage(string);
@@ -239,12 +234,14 @@ public class FishChecker extends JavaPlugin implements Listener{
 			}
 		}
 	}
-	public JSONObject castToJSON(Object object){
+	
+	private JSONObject castToJSON(Object object){
 		if(object instanceof JSONObject){
 			return (JSONObject) object;
 		}
 		return null;
 	}
+	
 	private void outputHashMap(HashMap<String, Object> map, CommandSender sender){
 		if (map == null){
 			sender.sendMessage(ChatColor.GREEN+ "Nothing Found");
@@ -255,5 +252,19 @@ public class FishChecker extends JavaPlugin implements Listener{
 		while (cValue.hasNext() && cKeys.hasNext()){
 			sender.sendMessage(ChatColor.GRAY + cKeys.next()+": "+ChatColor.DARK_RED+cValue.next().toString());
 		}
+	}
+	
+	private long getValue(Object obj){
+		long v = 0L;
+		if(obj instanceof Long){
+			v = (Long) obj;
+		}else if(obj instanceof String){
+			try{
+				v = Long.parseLong((String) obj);
+			}catch(NumberFormatException nfe){
+				return 0L;
+			}
+		}
+		return v;		
 	}
 }
