@@ -56,7 +56,7 @@ public class FishChecker extends JavaPlugin implements Listener{
 					StringBuilder builder = new StringBuilder();
 					BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
 					while((line = reader.readLine()) != null) {
-					 builder.append(line);
+						builder.append(line);
 					}
 					JSONParser parser = new JSONParser();
 					Object obj = parser.parse(builder.toString());
@@ -113,7 +113,7 @@ public class FishChecker extends JavaPlugin implements Listener{
 					StringBuilder builder = new StringBuilder();
 					BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
 					while((line = reader.readLine()) != null) {
-					 builder.append(line);
+						builder.append(line);
 					}
 					JSONParser parser = new JSONParser();
 					Object obj = parser.parse(builder.toString());
@@ -206,7 +206,7 @@ public class FishChecker extends JavaPlugin implements Listener{
 	}
 
 	@SuppressWarnings("rawtypes")
-	public void toJavaMap(JSONObject o, Map<String, Object> b) {
+	public void toJavaMap(JSONObject o, Map<String, Object> b){
 		Iterator ji = o.keySet().iterator();
 		while (ji.hasNext()) {
 			String key = (String) ji.next();
@@ -247,10 +247,8 @@ public class FishChecker extends JavaPlugin implements Listener{
 			sender.sendMessage(ChatColor.GREEN+ "Nothing Found");
 			return;
 		}
-		Iterator<String> cKeys = map.keySet().iterator();
-	    Iterator<Object> cValue = map.values().iterator();
-		while (cValue.hasNext() && cKeys.hasNext()){
-			sender.sendMessage(ChatColor.GRAY + cKeys.next()+": "+ChatColor.DARK_RED+cValue.next().toString());
+		for(String str:map.keySet()){
+			sender.sendMessage(ChatColor.GRAY + str + ": " + ChatColor.DARK_RED+ map.get(str).toString());
 		}
 	}
 	
