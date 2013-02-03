@@ -70,21 +70,20 @@ public class FishChecker extends JavaPlugin implements Listener{
 					JSONObject service = (JSONObject) bans.get("service");
 					long mcbansAmt = 0L;
 					if(service.get("mcbans") != null) mcbansAmt = getValue(service.get("mcbans"));
-					long mcbouncerAmt = 0;
+					long mcbouncerAmt = 0L;
 					if(service.get("mcbouncer") != null) mcbouncerAmt = getValue(service.get("mcbouncer"));
-					long mcblockitAmt =  0;
+					long mcblockitAmt =  0L;
 					if(service.get("mcblockit") != null) mcblockitAmt = getValue(service.get("mcblockit"));
-					long minebansAmt = 0;
+					long minebansAmt = 0L;
 					if(service.get("minebans") != null) minebansAmt = getValue(service.get("minebans"));
-					
-					printToAdmins(ChatColor.GRAY+"Player: "+player.getName()+" has "+ChatColor.RED+String.valueOf(mcbansAmt+mcbouncerAmt+mcblockitAmt+minebansAmt)+ChatColor.GRAY+" Ban(s).");
-					if(mcbansAmt > 0) printToAdmins(ChatColor.GRAY+"McBans: "+ChatColor.RED+String.valueOf(mcbansAmt));
-					if(mcbouncerAmt > 0) printToAdmins(ChatColor.GRAY+"McBouncer: "+ChatColor.RED+String.valueOf(mcbouncerAmt));
-					if(mcblockitAmt > 0) printToAdmins(ChatColor.GRAY+"McBlockit: "+ChatColor.RED+String.valueOf(mcblockitAmt));
-					if(minebansAmt > 0) printToAdmins(ChatColor.GRAY+"MineBans: "+ChatColor.RED+String.valueOf(minebansAmt));
-					if(mcbansAmt > 0 || mcbouncerAmt > 0 || mcblockitAmt > 0 || minebansAmt > 0)printToAdmins(ChatColor.GRAY+"Use "+ChatColor.GREEN+"/fishcheck "+event.getPlayer().getName()+ChatColor.GRAY+" for more info.");
-					
-				} catch (MalformedURLException e) {
+                    if(mcbansAmt > 0 || mcbouncerAmt > 0 || mcblockitAmt > 0 || minebansAmt > 0){
+                        printToAdmins(ChatColor.RED + player.getName() + ChatColor.GRAY + " has previous bans! Use" + ChatColor.GREEN + " /fishcheck" + event.getPlayer().getName() + ChatColor.GRAY + " for more info.");
+                        if(event.getPlayer().hasPermission("fishcheck.alertself")){
+                            event.getPlayer().sendMessage(ChatColor.GRAY + "You have" + ChatColor.GREEN + " global bans." + ChatColor.GRAY + " Admins have been notified.");
+                            event.getPlayer().sendMessage(ChatColor.GREEN+"See "+ChatColor.GRAY+"http://fishbans.com/u/"+event.getPlayer().getName()+"/" + ChatColor.GREEN + " for more info.");
+                        }
+                    }
+                } catch (MalformedURLException e) {
 					e.printStackTrace();
 				} catch (IOException e) {
 					e.printStackTrace();
