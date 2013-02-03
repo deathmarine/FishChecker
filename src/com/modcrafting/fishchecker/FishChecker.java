@@ -40,7 +40,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 public class FishChecker extends JavaPlugin implements Listener{
-	public void onEnable(){				
+    public void onEnable(){				
 		this.getServer().getPluginManager().registerEvents(this, this);
 	}
 	@EventHandler
@@ -56,7 +56,7 @@ public class FishChecker extends JavaPlugin implements Listener{
 					StringBuilder builder = new StringBuilder();
 					BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
 					while((line = reader.readLine()) != null) {
-						builder.append(line);
+					 builder.append(line);
 					}
 					JSONParser parser = new JSONParser();
 					Object obj = parser.parse(builder.toString());
@@ -76,15 +76,14 @@ public class FishChecker extends JavaPlugin implements Listener{
 					if(service.get("mcblockit") != null) mcblockitAmt = getValue(service.get("mcblockit"));
 					long minebansAmt = 0L;
 					if(service.get("minebans") != null) minebansAmt = getValue(service.get("minebans"));
-					
-					printToAdmins(ChatColor.GRAY+"Player: "+player.getName()+" has "+ChatColor.RED+String.valueOf(mcbansAmt+mcbouncerAmt+mcblockitAmt+minebansAmt)+ChatColor.GRAY+" Ban(s).");
-					if(mcbansAmt > 0L) printToAdmins(ChatColor.GRAY+"McBans: "+ChatColor.RED+String.valueOf(mcbansAmt));
-					if(mcbouncerAmt > 0L) printToAdmins(ChatColor.GRAY+"McBouncer: "+ChatColor.RED+String.valueOf(mcbouncerAmt));
-					if(mcblockitAmt > 0L) printToAdmins(ChatColor.GRAY+"McBlockit: "+ChatColor.RED+String.valueOf(mcblockitAmt));
-					if(minebansAmt > 0L) printToAdmins(ChatColor.GRAY+"MineBans: "+ChatColor.RED+String.valueOf(minebansAmt));
-					if(mcbansAmt > 0L || mcbouncerAmt > 0L || mcblockitAmt > 0L || minebansAmt > 0L)printToAdmins(ChatColor.GRAY+"Use "+ChatColor.GREEN+"/fishcheck "+event.getPlayer().getName()+ChatColor.GRAY+" for more info.");
-					
-				} catch (MalformedURLException e) {
+                    if(mcbansAmt > 0 || mcbouncerAmt > 0 || mcblockitAmt > 0 || minebansAmt > 0){
+                        printToAdmins(ChatColor.RED + player.getName() + ChatColor.GRAY + " has previous bans! Use" + ChatColor.GREEN + " /fishcheck" + event.getPlayer().getName() + ChatColor.GRAY + " for more info.");
+                        if(event.getPlayer().hasPermission("fishcheck.alertself")){
+                            event.getPlayer().sendMessage(ChatColor.GRAY + "You have" + ChatColor.GREEN + " global bans." + ChatColor.GRAY + " Admins have been notified.");
+                            event.getPlayer().sendMessage(ChatColor.GREEN+"See "+ChatColor.GRAY+"http://fishbans.com/u/"+event.getPlayer().getName()+"/" + ChatColor.GREEN + " for more info.");
+                        }
+                    }
+                } catch (MalformedURLException e) {
 					e.printStackTrace();
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -113,7 +112,7 @@ public class FishChecker extends JavaPlugin implements Listener{
 					StringBuilder builder = new StringBuilder();
 					BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
 					while((line = reader.readLine()) != null) {
-						builder.append(line);
+					 builder.append(line);
 					}
 					JSONParser parser = new JSONParser();
 					Object obj = parser.parse(builder.toString());
@@ -136,9 +135,9 @@ public class FishChecker extends JavaPlugin implements Listener{
 						sender.sendMessage("Mcbans: Player Not Found.");
 						return;
 					}
-					long mcbansAmt = 0L;
+					long mcbansAmt = 0;
 					if(mcbans.get("bans") != null) mcbansAmt = getValue(mcbans.get("bans"));
-					if(mcbansAmt > 0L){
+					if(mcbansAmt > 0){
 						JSONObject mcbansInfo = castToJSON(mcbans.get("ban_info"));
 						sender.sendMessage(ChatColor.RED+"Mcbans: " + String.valueOf(mcbansAmt));
 						toJavaMap(mcbansInfo, map);
@@ -154,9 +153,9 @@ public class FishChecker extends JavaPlugin implements Listener{
 						sender.sendMessage("McBouncer: Player Not Found.");
 						return;
 					}
-					long mcbouncerAmt = 0L;
+					long mcbouncerAmt = 0;
 					if(mcbouncer.get("bans") != null) mcbouncerAmt = getValue(mcbouncer.get("bans"));
-					if(mcbouncerAmt > 0L){
+					if(mcbouncerAmt > 0){
 						JSONObject mcbouncerInfo = castToJSON(mcbouncer.get("ban_info"));
 						sender.sendMessage(ChatColor.RED+"Mcbouncer: " + String.valueOf(mcbouncerAmt));
 						toJavaMap(mcbouncerInfo, map);
@@ -172,9 +171,9 @@ public class FishChecker extends JavaPlugin implements Listener{
 						sender.sendMessage("McBlockit: Player Not Found.");
 						return;
 					}
-					long mcblockitAmt = 0L;
+					long mcblockitAmt = 0;
 					if(mcblockit.get("bans") != null) mcblockitAmt = getValue(mcblockit.get("bans"));
-					if(mcblockitAmt > 0L){
+					if(mcblockitAmt > 0){
 						JSONObject mcblockitInfo = castToJSON(mcblockit.get("ban_info"));
 						sender.sendMessage(ChatColor.RED+"McBlockit: " + String.valueOf(mcblockitAmt));
 						toJavaMap(mcblockitInfo, map);
@@ -206,7 +205,7 @@ public class FishChecker extends JavaPlugin implements Listener{
 	}
 
 	@SuppressWarnings("rawtypes")
-	public void toJavaMap(JSONObject o, Map<String, Object> b){
+	public void toJavaMap(JSONObject o, Map<String, Object> b) {
 		Iterator ji = o.keySet().iterator();
 		while (ji.hasNext()) {
 			String key = (String) ji.next();
@@ -247,8 +246,10 @@ public class FishChecker extends JavaPlugin implements Listener{
 			sender.sendMessage(ChatColor.GREEN+ "Nothing Found");
 			return;
 		}
-		for(String str:map.keySet()){
-			sender.sendMessage(ChatColor.GRAY + str + ": " + ChatColor.DARK_RED+ map.get(str).toString());
+		Iterator<String> cKeys = map.keySet().iterator();
+	    Iterator<Object> cValue = map.values().iterator();
+		while (cValue.hasNext() && cKeys.hasNext()){
+			sender.sendMessage(ChatColor.GRAY + cKeys.next()+": "+ChatColor.DARK_RED+cValue.next().toString());
 		}
 	}
 	
