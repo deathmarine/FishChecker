@@ -70,11 +70,11 @@ public class FishChecker extends JavaPlugin implements Listener{
 					JSONObject service = (JSONObject) bans.get("service");
 					long mcbansAmt = 0L;
 					if(service.get("mcbans") != null) mcbansAmt = getValue(service.get("mcbans"));
-					long mcbouncerAmt = 0;
+					long mcbouncerAmt = 0L;
 					if(service.get("mcbouncer") != null) mcbouncerAmt = getValue(service.get("mcbouncer"));
-					long mcblockitAmt =  0;
+					long mcblockitAmt =  0L;
 					if(service.get("mcblockit") != null) mcblockitAmt = getValue(service.get("mcblockit"));
-					long minebansAmt = 0;
+					long minebansAmt = 0L;
 					if(service.get("minebans") != null) minebansAmt = getValue(service.get("minebans"));
 					
 					printToAdmins(ChatColor.GRAY+"Player: "+player.getName()+" has "+ChatColor.RED+String.valueOf(mcbansAmt+mcbouncerAmt+mcblockitAmt+minebansAmt)+ChatColor.GRAY+" Ban(s).");
