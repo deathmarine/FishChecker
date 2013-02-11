@@ -24,3 +24,6 @@ permissions:
     description: Allows players to use the /fishcheck command.
   fishcheck.messages:
     description: Allows players to view login messages.
+  fishcheck.self:
+    default: false
+    description: Allows players to view their own bans on login.

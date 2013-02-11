@@ -17,9 +17,7 @@
 package com.modcrafting.fishchecker;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,7 +35,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 public class FishChecker extends JavaPlugin implements Listener{
 	public void onEnable(){				
@@ -79,7 +76,8 @@ public class FishChecker extends JavaPlugin implements Listener{
 					long glizerAmt = 0L;
 					if(service.get("glizer") != null) glizerAmt = getValue(service.get("glizer"));
 					
-					printToAdmins(ChatColor.GRAY+"Player: "+player.getName()+" has "+ChatColor.RED+String.valueOf(mcbansAmt+mcbouncerAmt+mcblockitAmt+minebansAmt)+ChatColor.GRAY+" Ban(s).");
+					long sum = mcbansAmt+mcbouncerAmt+mcblockitAmt+minebansAmt+glizerAmt;
+					printToAdmins(ChatColor.GRAY+"Player: "+player.getName()+" has "+ChatColor.RED+String.valueOf(sum)+ChatColor.GRAY+" Ban(s).");
 					if(mcbansAmt > 0L) printToAdmins(ChatColor.GRAY+"McBans: "+ChatColor.RED+String.valueOf(mcbansAmt));
 					if(mcbouncerAmt > 0L) printToAdmins(ChatColor.GRAY+"McBouncer: "+ChatColor.RED+String.valueOf(mcbouncerAmt));
 					if(mcblockitAmt > 0L) printToAdmins(ChatColor.GRAY+"McBlockit: "+ChatColor.RED+String.valueOf(mcblockitAmt));
@@ -91,12 +89,16 @@ public class FishChecker extends JavaPlugin implements Listener{
 							minebansAmt > 0L ||
 							glizerAmt > 0L) 
 						printToAdmins(ChatColor.GRAY+"Use "+ChatColor.GREEN+"/fishcheck "+event.getPlayer().getName()+ChatColor.GRAY+" for more info.");
-					
-				} catch (MalformedURLException e) {
-					e.printStackTrace();
-				} catch (IOException e) {
-					e.printStackTrace();
-				} catch (ParseException e) {
+					if(event.getPlayer().hasPermission("fishcheck.alertself")){
+						event.getPlayer().sendMessage(ChatColor.GRAY+"Player: "+player.getName()+" has "+ChatColor.RED+String.valueOf(sum)+ChatColor.GRAY+" Ban(s).");
+						if(mcbansAmt > 0L || 
+								mcbouncerAmt > 0L || 
+								mcblockitAmt > 0L || 
+								minebansAmt > 0L ||
+								glizerAmt > 0L) 
+							event.getPlayer().sendMessage(ChatColor.GREEN+"See "+ChatColor.GRAY+"http://fishbans.com/u/"+event.getPlayer().getName()+"/" + ChatColor.GREEN + " for more info.");
+					}
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
