@@ -1,7 +1,7 @@
 name: FishChecker
 main: com.modcrafting.fishchecker.FishChecker
-version: 0.6
-website: http://modcrafting.com
+version: 0.7
+website: http://fishbans.com
 author: Deathmarine
 description: >
              Checking system for the FishBans website.

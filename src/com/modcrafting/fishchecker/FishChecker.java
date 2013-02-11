@@ -76,13 +76,21 @@ public class FishChecker extends JavaPlugin implements Listener{
 					if(service.get("mcblockit") != null) mcblockitAmt = getValue(service.get("mcblockit"));
 					long minebansAmt = 0L;
 					if(service.get("minebans") != null) minebansAmt = getValue(service.get("minebans"));
+					long glizerAmt = 0L;
+					if(service.get("glizer") != null) glizerAmt = getValue(service.get("glizer"));
 					
 					printToAdmins(ChatColor.GRAY+"Player: "+player.getName()+" has "+ChatColor.RED+String.valueOf(mcbansAmt+mcbouncerAmt+mcblockitAmt+minebansAmt)+ChatColor.GRAY+" Ban(s).");
 					if(mcbansAmt > 0L) printToAdmins(ChatColor.GRAY+"McBans: "+ChatColor.RED+String.valueOf(mcbansAmt));
 					if(mcbouncerAmt > 0L) printToAdmins(ChatColor.GRAY+"McBouncer: "+ChatColor.RED+String.valueOf(mcbouncerAmt));
 					if(mcblockitAmt > 0L) printToAdmins(ChatColor.GRAY+"McBlockit: "+ChatColor.RED+String.valueOf(mcblockitAmt));
 					if(minebansAmt > 0L) printToAdmins(ChatColor.GRAY+"MineBans: "+ChatColor.RED+String.valueOf(minebansAmt));
-					if(mcbansAmt > 0L || mcbouncerAmt > 0L || mcblockitAmt > 0L || minebansAmt > 0L)printToAdmins(ChatColor.GRAY+"Use "+ChatColor.GREEN+"/fishcheck "+event.getPlayer().getName()+ChatColor.GRAY+" for more info.");
+					if(glizerAmt > 0L) printToAdmins(ChatColor.GRAY+"Glizer: "+ChatColor.RED+String.valueOf(glizerAmt));
+					if(mcbansAmt > 0L || 
+							mcbouncerAmt > 0L || 
+							mcblockitAmt > 0L || 
+							minebansAmt > 0L ||
+							glizerAmt > 0L) 
+						printToAdmins(ChatColor.GRAY+"Use "+ChatColor.GREEN+"/fishcheck "+event.getPlayer().getName()+ChatColor.GRAY+" for more info.");
 					
 				} catch (MalformedURLException e) {
 					e.printStackTrace();
@@ -101,7 +109,7 @@ public class FishChecker extends JavaPlugin implements Listener{
 			return true;
 		}
 		if(args.length < 1) return false;
-		sender.sendMessage(ChatColor.GRAY+"Checking Site for information on "+ChatColor.DARK_RED+args[0]+ChatColor.GRAY+" !");
+		sender.sendMessage(ChatColor.GRAY+"Checking Fishbans for information on "+ChatColor.DARK_RED+args[0]+ChatColor.GRAY+" !");
 		this.getServer().getScheduler().scheduleSyncDelayedTask(this,new Runnable(){
 
 			@Override
@@ -130,7 +138,8 @@ public class FishChecker extends JavaPlugin implements Listener{
 						sender.sendMessage("Player Does Not Exist.");
 						return;
 					}
-					//McBans -
+					
+					//McBans
 					JSONObject mcbans = (JSONObject) service.get("mcbans");
 					if(mcbans == null){
 						sender.sendMessage("Mcbans: Player Not Found.");
@@ -183,12 +192,26 @@ public class FishChecker extends JavaPlugin implements Listener{
 					}else{
 						sender.sendMessage(ChatColor.GREEN+"McBlockit: "+String.valueOf(mcblockitAmt));
 					}
+					
+					//Glizer
+					JSONObject glizer = (JSONObject) service.get("glizer");
+					if(glizer == null){
+						sender.sendMessage("Glizer: Player Not Found.");
+						return;
+					}
+					long glizerAmt = 0L;
+					if(glizer.get("bans") != null) glizerAmt = getValue(glizer.get("bans"));
+					if(glizerAmt > 0L){
+						JSONObject glizerInfo = castToJSON(glizer.get("ban_info"));
+						sender.sendMessage(ChatColor.RED+"Glizer: " + String.valueOf(glizerAmt));
+						toJavaMap(glizerInfo, map);
+						if(glizerInfo != null) outputHashMap(map, sender);
+						map.clear();				
+					}else{
+						sender.sendMessage(ChatColor.GREEN+"Glizer: "+String.valueOf(glizerAmt));
+					}
 					sender.sendMessage(ChatColor.GREEN+"See "+ChatColor.GRAY+"http://fishbans.com/u/"+args[0].toLowerCase()+"/");
-				} catch (MalformedURLException e) {
-					e.printStackTrace();
-				} catch (IOException e) {
-					e.printStackTrace();
-				} catch (ParseException e) {
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
@@ -207,6 +230,7 @@ public class FishChecker extends JavaPlugin implements Listener{
 
 	@SuppressWarnings("rawtypes")
 	public void toJavaMap(JSONObject o, Map<String, Object> b){
+		if(o == null) return;
 		Iterator ji = o.keySet().iterator();
 		while (ji.hasNext()) {
 			String key = (String) ji.next();
