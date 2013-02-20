@@ -77,6 +77,11 @@ public class FishChecker extends JavaPlugin implements Listener{
 					if(service.get("glizer") != null) glizerAmt = getValue(service.get("glizer"));
 					
 					long sum = mcbansAmt+mcbouncerAmt+mcblockitAmt+minebansAmt+glizerAmt;
+					if(mcbansAmt > 0L || 
+						mcbouncerAmt > 0L || 
+						mcblockitAmt > 0L || 
+						minebansAmt > 0L ||
+						glizerAmt > 0L) 
 					printToAdmins(ChatColor.GRAY+"Player: "+player.getName()+" has "+ChatColor.RED+String.valueOf(sum)+ChatColor.GRAY+" Ban(s).");
 					if(mcbansAmt > 0L) printToAdmins(ChatColor.GRAY+"McBans: "+ChatColor.RED+String.valueOf(mcbansAmt));
 					if(mcbouncerAmt > 0L) printToAdmins(ChatColor.GRAY+"McBouncer: "+ChatColor.RED+String.valueOf(mcbouncerAmt));
