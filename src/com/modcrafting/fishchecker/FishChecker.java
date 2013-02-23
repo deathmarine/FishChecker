@@ -37,7 +37,12 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
 public class FishChecker extends JavaPlugin implements Listener{
-	public void onEnable(){				
+	public void onEnable(){
+		if(!this.getServer().getOnlineMode()){
+			this.getLogger().info(": We're sorry but fishchecker will not function correctly in offline mode.");
+			this.setEnabled(false);
+			return;
+		}			
 		this.getServer().getPluginManager().registerEvents(this, this);
 	}
 	@EventHandler
@@ -48,22 +53,20 @@ public class FishChecker extends JavaPlugin implements Listener{
 			@Override
 			public void run() {
 				try {
-					URL url = new URL("http://www.fishbans.com/api/stats/"+player.getName()+"/");
+					URL url = new URL("http://api.fishbans.com/stats/"+player.getName()+"/");
 					String line;
 					StringBuilder builder = new StringBuilder();
 					BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
-					while((line = reader.readLine()) != null) {
+					while((line = reader.readLine()) != null)
 						builder.append(line);
-					}
 					JSONParser parser = new JSONParser();
 					Object obj = parser.parse(builder.toString());
 					reader.close();
 					
 					JSONObject jsonObject = (JSONObject) obj;
 					JSONObject bans = (JSONObject) jsonObject.get("stats");
-					if(bans == null){
+					if(bans == null)
 						return;
-					}
 					JSONObject service = (JSONObject) bans.get("service");
 					long mcbansAmt = 0L;
 					if(service.get("mcbans") != null) mcbansAmt = getValue(service.get("mcbans"));
@@ -77,30 +80,18 @@ public class FishChecker extends JavaPlugin implements Listener{
 					if(service.get("glizer") != null) glizerAmt = getValue(service.get("glizer"));
 					
 					long sum = mcbansAmt+mcbouncerAmt+mcblockitAmt+minebansAmt+glizerAmt;
-					if(mcbansAmt > 0L || 
-						mcbouncerAmt > 0L || 
-						mcblockitAmt > 0L || 
-						minebansAmt > 0L ||
-						glizerAmt > 0L) 
-					printToAdmins(ChatColor.GRAY+"Player: "+player.getName()+" has "+ChatColor.RED+String.valueOf(sum)+ChatColor.GRAY+" Ban(s).");
+					if(sum > 0L) 
+						printToAdmins(ChatColor.GRAY+"Player: "+player.getName()+" has "+ChatColor.RED+String.valueOf(sum)+ChatColor.GRAY+" Ban(s).");
 					if(mcbansAmt > 0L) printToAdmins(ChatColor.GRAY+"McBans: "+ChatColor.RED+String.valueOf(mcbansAmt));
 					if(mcbouncerAmt > 0L) printToAdmins(ChatColor.GRAY+"McBouncer: "+ChatColor.RED+String.valueOf(mcbouncerAmt));
 					if(mcblockitAmt > 0L) printToAdmins(ChatColor.GRAY+"McBlockit: "+ChatColor.RED+String.valueOf(mcblockitAmt));
 					if(minebansAmt > 0L) printToAdmins(ChatColor.GRAY+"MineBans: "+ChatColor.RED+String.valueOf(minebansAmt));
 					if(glizerAmt > 0L) printToAdmins(ChatColor.GRAY+"Glizer: "+ChatColor.RED+String.valueOf(glizerAmt));
-					if(mcbansAmt > 0L || 
-							mcbouncerAmt > 0L || 
-							mcblockitAmt > 0L || 
-							minebansAmt > 0L ||
-							glizerAmt > 0L) 
+					if(sum > 0L) 
 						printToAdmins(ChatColor.GRAY+"Use "+ChatColor.GREEN+"/fishcheck "+event.getPlayer().getName()+ChatColor.GRAY+" for more info.");
 					if(event.getPlayer().hasPermission("fishcheck.alertself")){
 						event.getPlayer().sendMessage(ChatColor.GRAY+"Player: "+player.getName()+" has "+ChatColor.RED+String.valueOf(sum)+ChatColor.GRAY+" Ban(s).");
-						if(mcbansAmt > 0L || 
-								mcbouncerAmt > 0L || 
-								mcblockitAmt > 0L || 
-								minebansAmt > 0L ||
-								glizerAmt > 0L) 
+						if(sum > 0L) 
 							event.getPlayer().sendMessage(ChatColor.GREEN+"See "+ChatColor.GRAY+"http://fishbans.com/u/"+event.getPlayer().getName()+"/" + ChatColor.GREEN + " for more info.");
 					}
 				} catch (Exception e) {
@@ -123,7 +114,7 @@ public class FishChecker extends JavaPlugin implements Listener{
 			public void run() {
 				try {
 					HashMap<String, Object> map = new HashMap<String, Object>();
-					URL url = new URL("http://www.fishbans.com/api/bans/"+args[0].toLowerCase()+"/");
+					URL url = new URL("http://api.fishbans.com/api/bans/"+args[0].toLowerCase()+"/");
 					String line;
 					StringBuilder builder = new StringBuilder();
 					BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
