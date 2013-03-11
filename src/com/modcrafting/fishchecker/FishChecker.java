@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -36,199 +37,287 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
-public class FishChecker extends JavaPlugin implements Listener{
-	public void onEnable(){
-		if(!this.getServer().getOnlineMode()){
-			this.getLogger().info(": We're sorry but fishchecker will not function correctly in offline mode.");
+public class FishChecker extends JavaPlugin implements Listener {
+	public void onEnable() {
+		if (!this.getServer().getOnlineMode()) {
+			this.getLogger()
+					.info(": We're sorry but fishchecker will not function correctly in offline mode.");
 			this.setEnabled(false);
 			return;
-		}			
+		}
 		this.getServer().getPluginManager().registerEvents(this, this);
 	}
+
 	@EventHandler
-	public void onPlayerJoin(final PlayerJoinEvent event){
+	public void onPlayerJoin(PlayerJoinEvent event) {
+		if (event.getPlayer().hasPermission("fishcheck.override"))
+			return;
 		final Player player = event.getPlayer();
-		if(player.hasPermission("fishcheck.override")) return;
-		this.getServer().getScheduler().scheduleSyncDelayedTask(this,new Runnable(){
-			@Override
-			public void run() {
-				try {
-					URL url = new URL("http://api.fishbans.com/stats/"+player.getName()+"/");
-					String line;
-					StringBuilder builder = new StringBuilder();
-					BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
-					while((line = reader.readLine()) != null)
-						builder.append(line);
-					JSONParser parser = new JSONParser();
-					Object obj = parser.parse(builder.toString());
-					reader.close();
-					
-					JSONObject jsonObject = (JSONObject) obj;
-					JSONObject bans = (JSONObject) jsonObject.get("stats");
-					if(bans == null)
-						return;
-					JSONObject service = (JSONObject) bans.get("service");
-					long mcbansAmt = 0L;
-					if(service.get("mcbans") != null) mcbansAmt = getValue(service.get("mcbans"));
-					long mcbouncerAmt = 0L;
-					if(service.get("mcbouncer") != null) mcbouncerAmt = getValue(service.get("mcbouncer"));
-					long mcblockitAmt =  0L;
-					if(service.get("mcblockit") != null) mcblockitAmt = getValue(service.get("mcblockit"));
-					long minebansAmt = 0L;
-					if(service.get("minebans") != null) minebansAmt = getValue(service.get("minebans"));
-					long glizerAmt = 0L;
-					if(service.get("glizer") != null) glizerAmt = getValue(service.get("glizer"));
-					
-					long sum = mcbansAmt+mcbouncerAmt+mcblockitAmt+minebansAmt+glizerAmt;
-					if(sum > 0L) 
-						printToAdmins(ChatColor.GRAY+"Player: "+player.getName()+" has "+ChatColor.RED+String.valueOf(sum)+ChatColor.GRAY+" Ban(s).");
-					if(mcbansAmt > 0L) printToAdmins(ChatColor.GRAY+"McBans: "+ChatColor.RED+String.valueOf(mcbansAmt));
-					if(mcbouncerAmt > 0L) printToAdmins(ChatColor.GRAY+"McBouncer: "+ChatColor.RED+String.valueOf(mcbouncerAmt));
-					if(mcblockitAmt > 0L) printToAdmins(ChatColor.GRAY+"McBlockit: "+ChatColor.RED+String.valueOf(mcblockitAmt));
-					if(minebansAmt > 0L) printToAdmins(ChatColor.GRAY+"MineBans: "+ChatColor.RED+String.valueOf(minebansAmt));
-					if(glizerAmt > 0L) printToAdmins(ChatColor.GRAY+"Glizer: "+ChatColor.RED+String.valueOf(glizerAmt));
-					if(sum > 0L) 
-						printToAdmins(ChatColor.GRAY+"Use "+ChatColor.GREEN+"/fishcheck "+event.getPlayer().getName()+ChatColor.GRAY+" for more info.");
-					if(event.getPlayer().hasPermission("fishcheck.alertself")){
-						event.getPlayer().sendMessage(ChatColor.GRAY+"Player: "+player.getName()+" has "+ChatColor.RED+String.valueOf(sum)+ChatColor.GRAY+" Ban(s).");
-						if(sum > 0L) 
-							event.getPlayer().sendMessage(ChatColor.GREEN+"See "+ChatColor.GRAY+"http://fishbans.com/u/"+event.getPlayer().getName()+"/" + ChatColor.GREEN + " for more info.");
+		final String name = player.getName();
+		this.getServer().getScheduler()
+				.runTaskAsynchronously(this, new Runnable() {
+					@Override
+					public void run() {
+						try {
+							URL url = new URL("http://api.fishbans.com/stats/"
+									+ name + "/");
+							String line;
+							StringBuilder builder = new StringBuilder();
+							BufferedReader reader = new BufferedReader(
+									new InputStreamReader(url.openStream()));
+							while ((line = reader.readLine()) != null)
+								builder.append(line);
+							JSONParser parser = new JSONParser();
+							Object obj = parser.parse(builder.toString());
+							reader.close();
+
+							JSONObject jsonObject = (JSONObject) obj;
+							JSONObject bans = (JSONObject) jsonObject
+									.get("stats");
+							if (bans == null)
+								return;
+							JSONObject service = (JSONObject) bans
+									.get("service");
+							long mcbansAmt = 0L;
+							if (service.get("mcbans") != null)
+								mcbansAmt = getValue(service.get("mcbans"));
+							long mcbouncerAmt = 0L;
+							if (service.get("mcbouncer") != null)
+								mcbouncerAmt = getValue(service
+										.get("mcbouncer"));
+							long mcblockitAmt = 0L;
+							if (service.get("mcblockit") != null)
+								mcblockitAmt = getValue(service
+										.get("mcblockit"));
+							long minebansAmt = 0L;
+							if (service.get("minebans") != null)
+								minebansAmt = getValue(service.get("minebans"));
+							long glizerAmt = 0L;
+							if (service.get("glizer") != null)
+								glizerAmt = getValue(service.get("glizer"));
+
+							long sum = mcbansAmt + mcbouncerAmt + mcblockitAmt
+									+ minebansAmt + glizerAmt;
+							if (sum > 0L)
+								printToAdmins(ChatColor.GRAY + "Player: "
+										+ name + " has " + ChatColor.RED
+										+ String.valueOf(sum) + ChatColor.GRAY
+										+ " Ban(s).");
+							if (mcbansAmt > 0L)
+								printToAdmins(ChatColor.GRAY + "McBans: "
+										+ ChatColor.RED
+										+ String.valueOf(mcbansAmt));
+							if (mcbouncerAmt > 0L)
+								printToAdmins(ChatColor.GRAY + "McBouncer: "
+										+ ChatColor.RED
+										+ String.valueOf(mcbouncerAmt));
+							if (mcblockitAmt > 0L)
+								printToAdmins(ChatColor.GRAY + "McBlockit: "
+										+ ChatColor.RED
+										+ String.valueOf(mcblockitAmt));
+							if (minebansAmt > 0L)
+								printToAdmins(ChatColor.GRAY + "MineBans: "
+										+ ChatColor.RED
+										+ String.valueOf(minebansAmt));
+							if (glizerAmt > 0L)
+								printToAdmins(ChatColor.GRAY + "Glizer: "
+										+ ChatColor.RED
+										+ String.valueOf(glizerAmt));
+							if (sum > 0L)
+								printToAdmins(ChatColor.GRAY + "Use "
+										+ ChatColor.GREEN + "/fishcheck "
+										+ name + ChatColor.GRAY
+										+ " for more info.");
+							if (player.hasPermission("fishcheck.alertself")) {
+								player.sendMessage(ChatColor.GRAY + "Player: "
+										+ name + " has " + ChatColor.RED
+										+ String.valueOf(sum) + ChatColor.GRAY
+										+ " Ban(s).");
+								if (sum > 0L)
+									player.sendMessage(ChatColor.GREEN + "See "
+											+ ChatColor.GRAY
+											+ "http://fishbans.com/u/"
+											+ name.toLowerCase() + "/"
+											+ ChatColor.GREEN
+											+ " for more info.");
+							}
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
 					}
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
+				});
 	}
 
-	public boolean onCommand(final CommandSender sender, Command command, String label, final String[] args) {
-		if(!sender.hasPermission(command.getPermission())){
-			sender.sendMessage(ChatColor.RED + "You do not have the required permissions.");
+	public boolean onCommand(final CommandSender sender, Command command,
+			String label, final String[] args) {
+		if (!sender.hasPermission(command.getPermission())) {
+			sender.sendMessage(ChatColor.RED
+					+ "You do not have the required permissions.");
 			return true;
 		}
-		if(args.length < 1) return false;
-		sender.sendMessage(ChatColor.GRAY+"Checking Fishbans for information on "+ChatColor.DARK_RED+args[0]+ChatColor.GRAY+" !");
-		this.getServer().getScheduler().scheduleSyncDelayedTask(this,new Runnable(){
+		if (args.length < 1)
+			return false;
+		sender.sendMessage(ChatColor.GRAY
+				+ "Checking Fishbans for information on " + ChatColor.DARK_RED
+				+ args[0] + ChatColor.GRAY + " !");
+		this.getServer().getScheduler()
+				.runTaskAsynchronously(this, new Runnable() {
 
-			@Override
-			public void run() {
-				try {
-					HashMap<String, Object> map = new HashMap<String, Object>();
-					URL url = new URL("http://api.fishbans.com/api/bans/"+args[0].toLowerCase()+"/");
-					String line;
-					StringBuilder builder = new StringBuilder();
-					BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
-					while((line = reader.readLine()) != null) {
-						builder.append(line);
+					@Override
+					public void run() {
+						try {
+							HashMap<String, Object> map = new HashMap<String, Object>();
+							URL url = new URL(
+									"http://api.fishbans.com/api/bans/"
+											+ args[0].toLowerCase() + "/");
+							String line;
+							StringBuilder builder = new StringBuilder();
+							BufferedReader reader = new BufferedReader(
+									new InputStreamReader(url.openStream()));
+							while ((line = reader.readLine()) != null) {
+								builder.append(line);
+							}
+							JSONParser parser = new JSONParser();
+							Object obj = parser.parse(builder.toString());
+							reader.close();
+
+							JSONObject jsonObject = (JSONObject) obj;
+							JSONObject bans = (JSONObject) jsonObject
+									.get("bans");
+							if (bans == null) {
+								sender.sendMessage("Player Does Not Exist.");
+								return;
+							}
+							JSONObject service = (JSONObject) bans
+									.get("service");
+							if (service == null) {
+								sender.sendMessage("Player Does Not Exist.");
+								return;
+							}
+
+							// McBans
+							JSONObject mcbans = (JSONObject) service
+									.get("mcbans");
+							if (mcbans == null) {
+								sender.sendMessage("Mcbans: Player Not Found.");
+								return;
+							}
+							long mcbansAmt = 0L;
+							if (mcbans.get("bans") != null)
+								mcbansAmt = getValue(mcbans.get("bans"));
+							if (mcbansAmt > 0L) {
+								JSONObject mcbansInfo = castToJSON(mcbans
+										.get("ban_info"));
+								sender.sendMessage(ChatColor.RED + "Mcbans: "
+										+ String.valueOf(mcbansAmt));
+								toJavaMap(mcbansInfo, map);
+								if (mcbansInfo != null)
+									outputHashMap(map, sender);
+								map.clear();
+							} else {
+								sender.sendMessage(ChatColor.GREEN + "Mcbans: "
+										+ String.valueOf(mcbansAmt));
+							}
+
+							// McBouncer
+							JSONObject mcbouncer = (JSONObject) service
+									.get("mcbouncer");
+							if (mcbouncer == null) {
+								sender.sendMessage("McBouncer: Player Not Found.");
+								return;
+							}
+							long mcbouncerAmt = 0L;
+							if (mcbouncer.get("bans") != null)
+								mcbouncerAmt = getValue(mcbouncer.get("bans"));
+							if (mcbouncerAmt > 0L) {
+								JSONObject mcbouncerInfo = castToJSON(mcbouncer
+										.get("ban_info"));
+								sender.sendMessage(ChatColor.RED
+										+ "Mcbouncer: "
+										+ String.valueOf(mcbouncerAmt));
+								toJavaMap(mcbouncerInfo, map);
+								if (mcbouncerInfo != null)
+									outputHashMap(map, sender);
+								map.clear();
+							} else {
+								sender.sendMessage(ChatColor.GREEN
+										+ "Mcbouncer: "
+										+ String.valueOf(mcbouncerAmt));
+							}
+
+							// McBlockIt
+							JSONObject mcblockit = (JSONObject) service
+									.get("mcblockit");
+							if (mcblockit == null) {
+								sender.sendMessage("McBlockit: Player Not Found.");
+								return;
+							}
+							long mcblockitAmt = 0L;
+							if (mcblockit.get("bans") != null)
+								mcblockitAmt = getValue(mcblockit.get("bans"));
+							if (mcblockitAmt > 0L) {
+								JSONObject mcblockitInfo = castToJSON(mcblockit
+										.get("ban_info"));
+								sender.sendMessage(ChatColor.RED
+										+ "McBlockit: "
+										+ String.valueOf(mcblockitAmt));
+								toJavaMap(mcblockitInfo, map);
+								if (mcblockitInfo != null)
+									outputHashMap(map, sender);
+								map.clear();
+							} else {
+								sender.sendMessage(ChatColor.GREEN
+										+ "McBlockit: "
+										+ String.valueOf(mcblockitAmt));
+							}
+
+							// Glizer
+							JSONObject glizer = (JSONObject) service
+									.get("glizer");
+							if (glizer == null) {
+								sender.sendMessage("Glizer: Player Not Found.");
+								return;
+							}
+							long glizerAmt = 0L;
+							if (glizer.get("bans") != null)
+								glizerAmt = getValue(glizer.get("bans"));
+							if (glizerAmt > 0L) {
+								JSONObject glizerInfo = castToJSON(glizer
+										.get("ban_info"));
+								sender.sendMessage(ChatColor.RED + "Glizer: "
+										+ String.valueOf(glizerAmt));
+								toJavaMap(glizerInfo, map);
+								if (glizerInfo != null)
+									outputHashMap(map, sender);
+								map.clear();
+							} else {
+								sender.sendMessage(ChatColor.GREEN + "Glizer: "
+										+ String.valueOf(glizerAmt));
+							}
+							sender.sendMessage(ChatColor.GREEN + "See "
+									+ ChatColor.GRAY + "http://fishbans.com/u/"
+									+ args[0].toLowerCase() + "/");
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
 					}
-					JSONParser parser = new JSONParser();
-					Object obj = parser.parse(builder.toString());
-					reader.close();
-					
-					JSONObject jsonObject = (JSONObject) obj;
-					JSONObject bans = (JSONObject) jsonObject.get("bans");
-					if(bans == null){
-						sender.sendMessage("Player Does Not Exist.");
-						return;
-					}
-					JSONObject service = (JSONObject) bans.get("service");
-					if(service == null){
-						sender.sendMessage("Player Does Not Exist.");
-						return;
-					}
-					
-					//McBans
-					JSONObject mcbans = (JSONObject) service.get("mcbans");
-					if(mcbans == null){
-						sender.sendMessage("Mcbans: Player Not Found.");
-						return;
-					}
-					long mcbansAmt = 0L;
-					if(mcbans.get("bans") != null) mcbansAmt = getValue(mcbans.get("bans"));
-					if(mcbansAmt > 0L){
-						JSONObject mcbansInfo = castToJSON(mcbans.get("ban_info"));
-						sender.sendMessage(ChatColor.RED+"Mcbans: " + String.valueOf(mcbansAmt));
-						toJavaMap(mcbansInfo, map);
-						if(mcbansInfo != null) outputHashMap(map, sender);
-						map.clear();
-					}else{
-						sender.sendMessage(ChatColor.GREEN+"Mcbans: "+String.valueOf(mcbansAmt));
-					}
-					
-					//McBouncer
-					JSONObject mcbouncer = (JSONObject) service.get("mcbouncer");
-					if(mcbouncer == null){
-						sender.sendMessage("McBouncer: Player Not Found.");
-						return;
-					}
-					long mcbouncerAmt = 0L;
-					if(mcbouncer.get("bans") != null) mcbouncerAmt = getValue(mcbouncer.get("bans"));
-					if(mcbouncerAmt > 0L){
-						JSONObject mcbouncerInfo = castToJSON(mcbouncer.get("ban_info"));
-						sender.sendMessage(ChatColor.RED+"Mcbouncer: " + String.valueOf(mcbouncerAmt));
-						toJavaMap(mcbouncerInfo, map);
-						if(mcbouncerInfo != null) outputHashMap(map, sender);
-						map.clear();				
-					}else{
-						sender.sendMessage(ChatColor.GREEN+"Mcbouncer: "+String.valueOf(mcbouncerAmt));
-					}
-					
-					//McBlockIt
-					JSONObject mcblockit = (JSONObject) service.get("mcblockit");
-					if(mcblockit == null){
-						sender.sendMessage("McBlockit: Player Not Found.");
-						return;
-					}
-					long mcblockitAmt = 0L;
-					if(mcblockit.get("bans") != null) mcblockitAmt = getValue(mcblockit.get("bans"));
-					if(mcblockitAmt > 0L){
-						JSONObject mcblockitInfo = castToJSON(mcblockit.get("ban_info"));
-						sender.sendMessage(ChatColor.RED+"McBlockit: " + String.valueOf(mcblockitAmt));
-						toJavaMap(mcblockitInfo, map);
-						if(mcblockitInfo != null) outputHashMap(map, sender);
-						map.clear();				
-					}else{
-						sender.sendMessage(ChatColor.GREEN+"McBlockit: "+String.valueOf(mcblockitAmt));
-					}
-					
-					//Glizer
-					JSONObject glizer = (JSONObject) service.get("glizer");
-					if(glizer == null){
-						sender.sendMessage("Glizer: Player Not Found.");
-						return;
-					}
-					long glizerAmt = 0L;
-					if(glizer.get("bans") != null) glizerAmt = getValue(glizer.get("bans"));
-					if(glizerAmt > 0L){
-						JSONObject glizerInfo = castToJSON(glizer.get("ban_info"));
-						sender.sendMessage(ChatColor.RED+"Glizer: " + String.valueOf(glizerAmt));
-						toJavaMap(glizerInfo, map);
-						if(glizerInfo != null) outputHashMap(map, sender);
-						map.clear();				
-					}else{
-						sender.sendMessage(ChatColor.GREEN+"Glizer: "+String.valueOf(glizerAmt));
-					}
-					sender.sendMessage(ChatColor.GREEN+"See "+ChatColor.GRAY+"http://fishbans.com/u/"+args[0].toLowerCase()+"/");
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-		
+				});
+
 		return true;
 	}
-	
-	private void printToAdmins(String string){
-		for(Player player: this.getServer().getOnlinePlayers()){
-			if(player.hasPermission("fishcheck.messages") || player.isOp()){
+
+	private void printToAdmins(String string) {
+		for (Player player : this.getServer().getOnlinePlayers()) {
+			if (player.hasPermission("fishcheck.messages") || player.isOp()) {
 				player.sendMessage(string);
 			}
 		}
 	}
 
 	@SuppressWarnings("rawtypes")
-	public void toJavaMap(JSONObject o, Map<String, Object> b){
-		if(o == null) return;
+	public void toJavaMap(JSONObject o, Map<String, Object> b) {
+		if (o == null)
+			return;
 		Iterator ji = o.keySet().iterator();
 		while (ji.hasNext()) {
 			String key = (String) ji.next();
@@ -256,35 +345,36 @@ public class FishChecker extends JavaPlugin implements Listener{
 			}
 		}
 	}
-	
-	private JSONObject castToJSON(Object object){
-		if(object instanceof JSONObject){
+
+	private JSONObject castToJSON(Object object) {
+		if (object instanceof JSONObject) {
 			return (JSONObject) object;
 		}
 		return null;
 	}
-	
-	private void outputHashMap(HashMap<String, Object> map, CommandSender sender){
-		if (map == null){
-			sender.sendMessage(ChatColor.GREEN+ "Nothing Found");
+
+	private void outputHashMap(HashMap<String, Object> map, CommandSender sender) {
+		if (map == null) {
+			sender.sendMessage(ChatColor.GREEN + "Nothing Found");
 			return;
 		}
-		for(String str:map.keySet()){
-			sender.sendMessage(ChatColor.GRAY + str + ": " + ChatColor.DARK_RED+ map.get(str).toString());
+		for (String str : map.keySet()) {
+			sender.sendMessage(ChatColor.GRAY + str + ": " + ChatColor.DARK_RED
+					+ map.get(str).toString());
 		}
 	}
-	
-	private long getValue(Object obj){
+
+	private long getValue(Object obj) {
 		long v = 0L;
-		if(obj instanceof Long){
+		if (obj instanceof Long) {
 			v = (Long) obj;
-		}else if(obj instanceof String){
-			try{
+		} else if (obj instanceof String) {
+			try {
 				v = Long.parseLong((String) obj);
-			}catch(NumberFormatException nfe){
+			} catch (NumberFormatException nfe) {
 				return 0L;
 			}
 		}
-		return v;		
+		return v;
 	}
 }
