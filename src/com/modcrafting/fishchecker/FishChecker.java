@@ -168,7 +168,7 @@ public class FishChecker extends JavaPlugin implements Listener {
 						try {
 							HashMap<String, Object> map = new HashMap<String, Object>();
 							URL url = new URL(
-									"http://api.fishbans.com/api/bans/"
+									"http://api.fishbans.com/bans/"
 											+ args[0].toLowerCase() + "/");
 							String line;
 							StringBuilder builder = new StringBuilder();
@@ -269,6 +269,32 @@ public class FishChecker extends JavaPlugin implements Listener {
 								sender.sendMessage(ChatColor.GREEN
 										+ "McBlockit: "
 										+ String.valueOf(mcblockitAmt));
+							}
+							
+							// Minebans
+							JSONObject minebans = (JSONObject) service
+									.get("minebans");
+							if (minebans == null) {
+								sender.sendMessage("Minebans: Player Not Found.");
+								return;
+							}
+							long minebansAmt = 0L;
+							if (minebans.get("bans") != null)
+								minebansAmt = getValue(minebans.get("bans"));
+							if (minebansAmt > 0L) {
+								JSONObject minebansInfo = castToJSON(minebans
+										.get("ban_info"));
+								sender.sendMessage(ChatColor.RED
+										+ "Minebans: "
+										+ String.valueOf(minebansAmt));
+								toJavaMap(minebansInfo, map);
+								if (minebansInfo != null)
+									outputHashMap(map, sender);
+								map.clear();
+							} else {
+								sender.sendMessage(ChatColor.GREEN
+										+ "Minebans: "
+										+ String.valueOf(minebansAmt));
 							}
 
 							// Glizer
