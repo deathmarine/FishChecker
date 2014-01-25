@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FishChecker.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.modcrafting.fishchecker;
+package us.deathmarine.fishchecker;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -24,6 +24,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import net.gravitydevelopment.updater.Updater;
+import net.gravitydevelopment.updater.Updater.UpdateResult;
+import net.gravitydevelopment.updater.Updater.UpdateType;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -38,8 +42,10 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
 public class FishChecker extends JavaPlugin implements Listener {
+	private static FishChecker instance;
     @Override
     public void onEnable() {
+    	instance = this;
         if (!this.getServer().getOnlineMode()) {
             this.getLogger()
                     .info(": We're sorry but fishchecker will not function correctly in offline mode.");
@@ -47,6 +53,33 @@ public class FishChecker extends JavaPlugin implements Listener {
             return;
         }
         this.getServer().getPluginManager().registerEvents(this, this);
+        if(!this.getDataFolder().exists()){
+        	this.getDataFolder().mkdir();
+            this.getConfig().set("Plugin.AutoUpdate", true);
+            this.saveConfig();
+        }
+        if (this.getConfig().getBoolean("Plugin.AutoUpdate", true)) {
+			getServer().getScheduler().runTask(this, new Runnable() {
+				@Override
+				public void run() {
+					Updater up = new Updater(instance, 40886, getFile(),
+							UpdateType.DEFAULT, true);
+					if (!up.getResult().equals(UpdateResult.SUCCESS)) {
+						if (up.getResult().equals(
+								Updater.UpdateResult.FAIL_NOVERSION)) {
+							instance.getLogger().info("Unable to connect to dev.bukkit.org.");
+						} else {
+							instance.getLogger().info("No Updates found on dev.bukkit.org.");
+						}
+					} else {
+						instance.getLogger().info("Update "
+								+ up.getLatestName()
+								+ " found and downloaded please restart your server.");
+					}
+				}
+
+			});
+		}
     }
 
     @EventHandler
@@ -79,17 +112,16 @@ public class FishChecker extends JavaPlugin implements Listener {
                                 return;
                             JSONObject service = (JSONObject) bans
                                     .get("service");
+                            
                             long mcbansAmt = 0L;
                             if (service.get("mcbans") != null)
                                 mcbansAmt = getValue(service.get("mcbans"));
                             long mcbouncerAmt = 0L;
                             if (service.get("mcbouncer") != null)
-                                mcbouncerAmt = getValue(service
-                                        .get("mcbouncer"));
+                                mcbouncerAmt = getValue(service.get("mcbouncer"));
                             long mcblockitAmt = 0L;
                             if (service.get("mcblockit") != null)
-                                mcblockitAmt = getValue(service
-                                        .get("mcblockit"));
+                                mcblockitAmt = getValue(service.get("mcblockit"));
                             long minebansAmt = 0L;
                             if (service.get("minebans") != null)
                                 minebansAmt = getValue(service.get("minebans"));

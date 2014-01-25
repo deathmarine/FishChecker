@@ -1,10 +1,9 @@
-name: FishChecker
-main: com.modcrafting.fishchecker.FishChecker
-version: 0.9
-website: http://fishbans.com
+name: ${name}
+main: ${groupId}.${artifactId}.${name}
+version: ${version}
+website: ${url}
 author: Deathmarine
-description: >
-             Checking system for the FishBans website.
+description: '${description}'
 commands:
   fishcheck:
     description: Checks a player name against the FishBans website.
